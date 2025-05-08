@@ -1,0 +1,135 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-text-top {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #000;
+}
+
+.logo-text-bottom {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.desktop-nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.desktop-nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.desktop-nav a:hover {
+    color: #0066cc;
+}
+
+.get-started {
+    background-color: #0066cc;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.get-started:hover {
+    background-color: #0052a3;
+}
+
+.mobile-menu-button {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+    font-size: 2rem;
+}
+
+.mobile-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.mobile-menu a {
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    width: auto;
+}
+
+.mobile-menu a:last-child {
+    border-bottom: none;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .desktop-nav {
+        display: none;
+    }
+
+    .mobile-menu-button {
+        display: block;
+    }
+
+    .mobile-menu {
+        display: flex;
+    }
+
+    .header {
+        padding: 10px 15px;
+    }
+
+    .logo-text {
+        font-size: 10px;
+    }
+}

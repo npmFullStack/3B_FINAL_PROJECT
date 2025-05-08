@@ -1,0 +1,210 @@
+/* assets/css/ManageBooks.css */
+.manage-books-page {
+    min-height: 100vh;
+    background-color: #fff;
+}
+
+.main-content {
+    transition: margin-left 0.3s;
+}
+
+.content-wrapper {
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+}
+
+/* Table Header */
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+/* Search Bar */
+.search-bar {
+    position: relative;
+    flex-grow: 1;
+    margin-right: 10px;
+    max-width: 500px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 8px 12px 8px 35px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #777;
+    font-size: 20px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.btn-edit {
+    background-color: rgb(217, 192, 0);
+    color: #fff;
+    border: 1px solid black;
+    border-radius: 2px;
+}
+
+.btn-edit:hover {
+    background-color: rgb(153, 142, 0);
+}
+
+.btn-delete {
+    background-color: #e74c3c;
+    color: #fff;
+    border: 1px solid black;
+    border-radius: 2px;
+}
+
+.btn-delete:hover {
+    background-color: rgb(167, 39, 0);
+}
+
+.btn-request {
+    background-color: #1976d2; /* Blue color */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-request:hover {
+    background-color: #1565c0; /* Darker blue on hover */
+}
+
+/* Book Cover */
+.book-cover {
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.book-cover:hover {
+    transform: scale(1.05);
+}
+
+.no-cover {
+    width: 50px;
+    height: 70px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+/* No Data State */
+.no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.no-data img {
+    width: 150px;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+/* Loading State */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+/* DataTable Overrides */
+.rdt_Table {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.rdt_TableHead .rdt_TableCol {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.rdt_TableRow {
+    transition: background-color 0.3s;
+}
+
+.rdt_TableRow:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .table-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-bar {
+        margin-right: 0;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .content-wrapper {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768) {
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .btn-icon {
+        padding: 4px;
+    }
+}

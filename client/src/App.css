@@ -1,0 +1,158 @@
+/* App.css */
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans&family=Outfit:wght@100..900&display=swap");
+
+.App {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+body {
+    margin: 0;
+    font-family: "Outfit", sans-serif;
+    font-weight: normal;
+    overflow-x: hidden;
+}
+
+section {
+    padding: 4rem 2rem;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section {
+    background-color: #fff;
+}
+
+/* Navbar styles */
+.navbar {
+  max-height: 70px;
+  min-height: 50px;
+    background-color: #0066cc;
+    color: white;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #0066cc;
+    font-family: "Cal Sans", sans-serif;
+    font-weight: 800;
+}
+
+p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: #333;
+    line-height: 1.6;
+}
+
+label {
+    font-size: 0.65rem;
+    font-weight: 400;
+    color: #ddd;
+}
+
+.image {
+    flex: 1;
+    text-align: center;
+}
+
+.image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* BUTTON */
+.btn-primary {
+    background-color: #0066cc;
+    color: #fff;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background-color: #0052a3;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-badge.pending {
+    background-color: #FFF3CD;
+    color: #856404;
+}
+
+.status-badge.approved {
+    background-color: #D4EDDA;
+    color: #155724;
+}
+
+.status-badge.rejected {
+    background-color: #F8D7DA;
+    color: #721C24;
+}
+
+/* Student details */
+.student-details {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* Action buttons */
+.btn-approve {
+    color: #28a745;
+    margin-right: 8px;
+}
+
+.btn-approve:hover {
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.btn-reject {
+    color: #dc3545;
+}
+
+.btn-reject:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+@media (max-width: 768px) {
+    .image {
+        display: none;
+    }
+
+    section {
+        padding-top: 0px;
+    }
+}

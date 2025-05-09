@@ -26,6 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/requests', [RequestBookController::class, 'index']); // Get all requests
 Route::put('/requests/{request}', [RequestBookController::class, 'update']); // Update status
 
+Route::post('/requests/{request}/return', [RequestBookController::class, 'returnBook']);
+
 });
 
 Route::fallback(function() {

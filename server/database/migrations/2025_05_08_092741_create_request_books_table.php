@@ -15,8 +15,18 @@ return new class extends Migration
     $table->id();
     $table->foreignId('user_id')->constrained()->onDelete('cascade');
     $table->foreignId('book_id')->constrained()->onDelete('cascade');
-    $table->enum('status', ['pending', 'approved', 'rejected', 'returned', 'overdue']);
+    
+    // Student-facing status (shown in UI)
+    $table->enum('status', ['pending', 'approved', 'rejected'])
+          ->default('pending');
+    
+    // Internal tracking (not shown to students)
+    $table->enum('internal_status', ['on_loan', 'overdue', 'returned'])
+          ->nullable();
+    
+    $table->dateTime('checked_out_at')->nullable();
     $table->dateTime('due_date')->nullable();
+    $table->dateTime('returned_at')->nullable();
     $table->timestamps();
 });
     }

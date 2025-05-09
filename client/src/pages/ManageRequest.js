@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
-import { Menu as MenuIcon, Check, Close, Search } from "@mui/icons-material";
+import {
+    Menu as MenuIcon,
+    Search,
+    CheckCircle as ApproveIcon,
+    Cancel as RejectIcon
+} from "@mui/icons-material";
 import DataTable from "react-data-table-component";
 import "../assets/css/ManageBooks.css";
 import axios from "axios";
@@ -10,27 +15,89 @@ const ManageRequests = () => {
     const [showOverlay, setShowOverlay] = useState(false);
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filterText, setFilterText] = useState('');
+    const [filterText, setFilterText] = useState("");
 
-    // Fetch all book requests with user and book details
     const fetchRequests = async () => {
         try {
+            console.log("Fetching requests...");
             const response = await axios.get("/api/requests", {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                params: {
+                    _: Date.now() // Cache buster
                 }
             });
+
+            console.log("Fetched requests:", response.data);
             setRequests(response.data);
             setLoading(false);
         } catch (error) {
-            console.error("Error fetching requests:", error);
+            console.error("Fetch error:", error);
             setLoading(false);
+            alert("Failed to load requests");
         }
     };
 
     useEffect(() => {
         fetchRequests();
     }, []);
+
+    const handleApprove = async (id) => {
+  try {
+    const { data } = await axios.put(`/api/requests/${id}`, {
+      status: 'approved'
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    if (data.success) {
+      setRequests(requests.map(req => 
+        req.id === id ? data.data : req
+      ));
+    }
+  } catch (error) {
+    console.error('Error:', error.response?.data || error.message);
+  }
+};
+
+    const handleReject = async requestId => {
+        try {
+            console.log("Rejecting request:", requestId);
+            const response = await axios.put(
+                `/api/requests/${requestId}`,
+                { status: "rejected" },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            console.log("Rejection response:", response.data);
+
+            if (response.data.success) {
+                setRequests(prevRequests =>
+                    prevRequests.map(request =>
+                        request.id === requestId
+                            ? { ...request, ...response.data.data }
+                            : request
+                    )
+                );
+            } else {
+                throw new Error(response.data.message || "Rejection failed");
+            }
+        } catch (error) {
+            console.error("Rejection error:", error);
+            alert(error.message);
+            fetchRequests(); // Refresh data
+        }
+    };
 
     const toggleSidebar = () => {
         setIsMinimized(!isMinimized);
@@ -42,122 +109,103 @@ const ManageRequests = () => {
         setShowOverlay(false);
     };
 
-    // Filter requests based on search text
-    const filteredRequests = requests.filter(item =>
-        item.user.id_number.toLowerCase().includes(filterText.toLowerCase()) ||
-        item.user.first_name.toLowerCase().includes(filterText.toLowerCase()) ||
-        item.user.last_name.toLowerCase().includes(filterText.toLowerCase()) ||
-        item.book.title.toLowerCase().includes(filterText.toLowerCase())
+    const filteredRequests = requests.filter(
+        item =>
+            item.user.id_number
+                .toLowerCase()
+                .includes(filterText.toLowerCase()) ||
+            `${item.user.first_name} ${item.user.last_name}`
+                .toLowerCase()
+                .includes(filterText.toLowerCase()) ||
+            item.book.title.toLowerCase().includes(filterText.toLowerCase())
     );
 
-    // Custom styles for DataTable
-    const customStyles = {
-        headCells: {
-            style: {
-                fontWeight: 'bold',
-                fontSize: '14px',
-                backgroundColor: '#f5f5f5',
-            },
-        },
-        cells: {
-            style: {
-                padding: '12px',
-            },
-        },
-    };
-
-    // Handle approve/reject actions
-    const handleStatusChange = async (requestId, newStatus) => {
-        try {
-            await axios.put(`/api/requests/${requestId}`, 
-                { status: newStatus },
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    }
-                }
-            );
-            fetchRequests(); // Refresh the list
-        } catch (error) {
-            console.error("Error updating request:", error);
-            alert("Failed to update request status");
-        }
-    };
-
-    // Table columns
     const columns = [
         {
             name: "ID Number",
             selector: row => row.user.id_number,
-            sortable: true
+            sortable: true,
+            width: "120px"
         },
         {
-            name: "Student Name",
+            name: "Full Name",
             cell: row => (
-                <div>
+                <div className="student-name">
                     {row.user.first_name} {row.user.last_name}
-                    <div className="student-details">
-                        {row.user.student?.course} - 
-                        {row.user.student?.year_level}-
-                        {row.user.student?.section}
-                    </div>
                 </div>
             ),
             sortable: true,
-            wrap: true
+            grow: 1,
+            minWidth: "150px"
+        },
+        {
+            name: "Course Year & Section",
+            cell: row => (
+                <div className="course-year-section">
+                    <span className="course">
+                        {row.user.student?.course || "N/A"}
+                    </span>
+                    <span className="year-section">
+                        {row.user.student?.year_level || "N/A"}-
+                        {row.user.student?.section || "N/A"}
+                    </span>
+                </div>
+            ),
+            sortable: true,
+            minWidth: "180px"
         },
         {
             name: "Book Title",
             selector: row => row.book.title,
             sortable: true,
-            wrap: true
+            grow: 2,
+            minWidth: "200px"
         },
-        {
-            name: "Author",
-            selector: row => row.book.author,
-            sortable: true
-        },
-        {
-            name: "Request Date",
-            selector: row => new Date(row.created_at).toLocaleString(),
-            sortable: true
-        },
-        {
-            name: "Status",
-            cell: row => (
-                <span className={`status-badge ${row.status}`}>
-                    {row.status}
-                </span>
-            ),
-            sortable: true
-        },
-        {
-            name: "Actions",
-            cell: row => (
+    {
+        name: "Actions",
+        cell: row => {
+            // Check both status and internal_status for more reliable state
+            const isPending = row.status === 'pending' && 
+                             (!row.internal_status || row.internal_status === null);
+            
+            return (
                 <div className="action-buttons">
-                    {row.status === 'pending' && (
+                    {isPending ? (
                         <>
-                            <button 
-                                className="btn-icon btn-approve" 
-                                title="Approve"
-                                onClick={() => handleStatusChange(row.id, 'approved')}
+                            <button
+                                className="btn-action btn-approve"
+                                onClick={() => handleApprove(row.id)}
+                                disabled={loading}
                             >
-                                <Check fontSize="small" />
+                                <ApproveIcon fontSize="small" />
+                                Approve
                             </button>
-                            <button 
-                                className="btn-icon btn-reject" 
-                                title="Reject"
-                                onClick={() => handleStatusChange(row.id, 'rejected')}
+                            <button
+                                className="btn-action btn-reject"
+                                onClick={() => handleReject(row.id)}
+                                disabled={loading}
                             >
-                                <Close fontSize="small" />
+                                <RejectIcon fontSize="small" />
+                                Reject
                             </button>
                         </>
+                    ) : (
+                        <div className={`status-badge ${row.status}`}>
+                            {row.status.toUpperCase()}
+                            {row.internal_status && (
+                                <div className="internal-status">
+                                    ({row.internal_status})
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
-            ),
-            width: '150px'
-        }
-    ];
+            );
+        },
+        width: "200px",
+        right: true
+    }
+];
 
     return (
         <div className="manage-books-page">
@@ -189,40 +237,49 @@ const ManageRequests = () => {
                             <Search className="search-icon" />
                             <input
                                 type="text"
-                                placeholder="Search requests..."
+                                placeholder="Search by ID, name, or book..."
                                 value={filterText}
                                 onChange={e => setFilterText(e.target.value)}
                             />
                         </div>
                     </div>
 
-                    {loading ? (
-                        <div className="loading-spinner">Loading...</div>
-                    ) : requests.length > 0 ? (
-                        <DataTable
-                            columns={columns}
-                            data={filteredRequests}
-                            pagination
-                            highlightOnHover
-                            responsive
-                            striped
-                            defaultSortField="created_at"
-                            defaultSortAsc={false}
-                            customStyles={customStyles}
-                            subHeader
-                            subHeaderComponent={
-                                <div style={{ display: 'none' }} /> // Hide default search
+                    <DataTable
+                        columns={columns}
+                        data={filteredRequests}
+                        pagination
+                        highlightOnHover
+                        responsive
+                        striped
+                        progressPending={loading}
+                        progressComponent={
+                            <div className="loading-spinner">Loading...</div>
+                        }
+                        noDataComponent={
+                            <div className="no-data">
+                                <img
+                                    src="./images/no-data.png"
+                                    alt="No data available"
+                                />
+                                <p>No requests found</p>
+                            </div>
+                        }
+                        customStyles={{
+                            cells: {
+                                style: {
+                                    padding: "8px",
+                                    fontSize: "0.875rem"
+                                }
+                            },
+                            headCells: {
+                                style: {
+                                    padding: "8px",
+                                    fontSize: "0.875rem",
+                                    fontWeight: "600"
+                                }
                             }
-                        />
-                    ) : (
-                        <div className="no-data">
-                            <img
-                                src="./images/no-data.png"
-                                alt="No data available"
-                            />
-                            <p>No requests found</p>
-                        </div>
-                    )}
+                        }}
+                    />
                 </div>
             </div>
         </div>

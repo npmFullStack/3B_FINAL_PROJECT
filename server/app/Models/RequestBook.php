@@ -6,16 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class RequestBook extends Model
 {
-    protected $fillable = ['user_id', 'book_id', 'status'];
-    
-    // No need for $casts if not using Enum class
-    // Just document the possible values in comments
-    /**
-     * Possible status values:
-     * - pending
-     * - approved
-     * - rejected
-     */
+    protected $fillable = [
+        'user_id', 
+        'book_id', 
+        'status',
+        'internal_status',
+        'checked_out_at',
+        'due_date',
+        'returned_at'
+    ];
     
     public function user()
     {

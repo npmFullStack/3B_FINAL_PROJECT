@@ -32,8 +32,8 @@ section {
 
 /* Navbar styles */
 .navbar {
-  max-height: 70px;
-  min-height: 50px;
+    max-height: 70px;
+    min-height: 50px;
     background-color: #0066cc;
     color: white;
     padding: 5px 10px;
@@ -108,18 +108,18 @@ label {
 }
 
 .status-badge.pending {
-    background-color: #FFF3CD;
+    background-color: #fff3cd;
     color: #856404;
 }
 
 .status-badge.approved {
-    background-color: #D4EDDA;
+    background-color: #d4edda;
     color: #155724;
 }
 
 .status-badge.rejected {
-    background-color: #F8D7DA;
-    color: #721C24;
+    background-color: #f8d7da;
+    color: #721c24;
 }
 
 /* Student details */

@@ -8,63 +8,33 @@ use Illuminate\Http\Request;
 class RequestBookController extends Controller
 {
  public function store(Request $request)
-{
-    $validated = $request->validate([
-        'book_id' => 'required|exists:books,id',
-    ]);
+ {
+  $validated = $request->validate([
+   "book_id" => "required|exists:books,id",
+  ]);
 
-    // Check for existing pending request
-    $requestExists = RequestBook::where('user_id', auth()->id())
-        ->where('book_id', $validated['book_id'])
-        ->where('status', 'pending')
-        ->exists();
+  $requestExists = RequestBook::where("user_id", auth()->id())
+   ->where("book_id", $validated["book_id"])
+   ->where("status", "pending")
+   ->exists();
 
-    if ($requestExists) {
-        return response()->json(['message' => 'Request already pending'], 409);
-    }
+  if ($requestExists) {
+   return response()->json(["message" => "Request already pending"], 409);
+  }
 
-    RequestBook::create([
-        'user_id' => auth()->id(),
-        'book_id' => $validated['book_id'],
-        'status' => 'pending',
-        // No due_date set yet (will be set when approved)
-    ]);
+  RequestBook::create([
+   "user_id" => auth()->id(),
+   "book_id" => $validated["book_id"],
+   "status" => "pending",
+  ]);
 
-    return response()->json([
-        'message' => 'Request sent successfully'
-    ], 201);
-}
-
-public function update(Request $request, RequestBook $requestBook)
-{
-    try {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,approved,rejected'
-        ]);
-
-        $requestBook->status = $validated['status'];
-        
-        if ($validated['status'] === 'approved') {
-            $requestBook->due_date = now()->addDays(3);
-            $requestBook->checked_out_at = now();
-            $requestBook->internal_status = 'on_loan';
-        }
-
-        $requestBook->save();
-
-        return response()->json([
-            'success' => true,
-            'data' => $requestBook
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Update failed',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
+  return response()->json(
+   [
+    "message" => "Request sent successfully",
+   ],
+   201,
+  );
+ }
 
  public function index()
  {
@@ -75,28 +45,45 @@ public function update(Request $request, RequestBook $requestBook)
   return response()->json($requests);
  }
 
- public function returnBook(RequestBook $requestBook)
+ public function update(Request $request, $id)
  {
-  $fineAmount = 0;
-
-  if ($requestBook->due_date && now()->gt($requestBook->due_date)) {
-   $daysLate = now()->diffInDays($requestBook->due_date);
-   $fineAmount = $daysLate * 10; // $10 per day late
-
-   // Create fine record
-   Fine::create([
-    "request_id" => $requestBook->id,
-    "amount" => $fineAmount,
-    "reason" => "late_return",
-    "status" => "pending",
-   ]);
+  if (auth()->user()->user_type !== "librarian") {
+   return response()->json(["message" => "Unauthorized"], 403);
   }
 
-  $requestBook->update(["status" => "returned"]);
+  $requestBook = RequestBook::findOrFail($id);
+
+  if ($requestBook->status !== "pending") {
+   return response()->json(
+    [
+     "message" => "Request has already been processed",
+    ],
+    400,
+   );
+  }
+
+  $validated = $request->validate([
+   "status" => "required|in:approved,rejected",
+  ]);
+
+  // Only update if status is changing
+  if ($requestBook->status !== $validated["status"]) {
+   $requestBook->status = $validated["status"];
+
+   // If approving, set additional fields
+   if ($validated["status"] === "approved") {
+    $requestBook->checked_out_at = now();
+    $requestBook->due_date = now()->addDays(3); // 3 days loan period
+    $requestBook->internal_status = "on_loan";
+   }
+
+   $requestBook->save();
+  }
 
   return response()->json([
-   "message" => "Book marked as returned",
-   "fine" => $fineAmount > 0 ? ["amount" => $fineAmount] : null,
+   "success" => true,
+   "data" => $requestBook->load(["user.student", "book"]),
+   "message" => "Request status updated successfully",
   ]);
  }
 }

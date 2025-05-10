@@ -9,6 +9,8 @@ import {
 import DataTable from "react-data-table-component";
 import "../assets/css/ManageBooks.css";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ManageRequests = () => {
     const [isMinimized, setIsMinimized] = useState(false);
@@ -25,7 +27,7 @@ const ManageRequests = () => {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 },
                 params: {
-                    _: Date.now() // Cache buster
+                    _: Date.now()
                 }
             });
 
@@ -43,32 +45,12 @@ const ManageRequests = () => {
         fetchRequests();
     }, []);
 
-    const handleApprove = async (id) => {
-  try {
-    const { data } = await axios.put(`/api/requests/${id}`, {
-      status: 'approved'
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    
-    if (data.success) {
-      setRequests(requests.map(req => 
-        req.id === id ? data.data : req
-      ));
-    }
-  } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
-  }
-};
-
-    const handleReject = async requestId => {
+    const handleStatusUpdate = async (id, status) => {
         try {
-            console.log("Rejecting request:", requestId);
-            const response = await axios.put(
-                `/api/requests/${requestId}`,
-                { status: "rejected" },
+            setLoading(true);
+            const { data } = await axios.put(
+                `/api/requests/${id}`,
+                { status },
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem(
@@ -79,25 +61,28 @@ const ManageRequests = () => {
                 }
             );
 
-            console.log("Rejection response:", response.data);
-
-            if (response.data.success) {
-                setRequests(prevRequests =>
-                    prevRequests.map(request =>
-                        request.id === requestId
-                            ? { ...request, ...response.data.data }
-                            : request
-                    )
-                );
-            } else {
-                throw new Error(response.data.message || "Rejection failed");
+            if (!data.success) {
+                throw new Error(data.message || `Failed to ${status} request`);
             }
+
+            setRequests(prevRequests =>
+                prevRequests.map(req => (req.id === id ? data.data : req))
+            );
+
+            toast.success(`Request ${status} successfully!`);
         } catch (error) {
-            console.error("Rejection error:", error);
-            alert(error.message);
-            fetchRequests(); // Refresh data
+            console.error("Error:", error);
+            const errorMessage =
+                error.response?.data?.message ||
+                error.message ||
+                `Failed to ${status} request`;
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false);
         }
     };
+    const handleApprove = id => handleStatusUpdate(id, "approved");
+    const handleReject = id => handleStatusUpdate(id, "rejected");
 
     const toggleSidebar = () => {
         setIsMinimized(!isMinimized);
@@ -161,51 +146,52 @@ const ManageRequests = () => {
             grow: 2,
             minWidth: "200px"
         },
-    {
-        name: "Actions",
-        cell: row => {
-            // Check both status and internal_status for more reliable state
-            const isPending = row.status === 'pending' && 
-                             (!row.internal_status || row.internal_status === null);
-            
-            return (
-                <div className="action-buttons">
-                    {isPending ? (
-                        <>
-                            <button
-                                className="btn-action btn-approve"
-                                onClick={() => handleApprove(row.id)}
-                                disabled={loading}
-                            >
-                                <ApproveIcon fontSize="small" />
-                                Approve
-                            </button>
-                            <button
-                                className="btn-action btn-reject"
-                                onClick={() => handleReject(row.id)}
-                                disabled={loading}
-                            >
-                                <RejectIcon fontSize="small" />
-                                Reject
-                            </button>
-                        </>
-                    ) : (
-                        <div className={`status-badge ${row.status}`}>
-                            {row.status.toUpperCase()}
-                            {row.internal_status && (
-                                <div className="internal-status">
-                                    ({row.internal_status})
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            );
-        },
-        width: "200px",
-        right: true
-    }
-];
+        {
+            name: "Actions",
+            cell: row => {
+                // Check both status and internal_status for more reliable state
+                const isPending =
+                    row.status === "pending" &&
+                    (!row.internal_status || row.internal_status === null);
+
+                return (
+                    <div className="action-buttons">
+                        {isPending ? (
+                            <>
+                                <button
+                                    className="btn-action btn-approve"
+                                    onClick={() => handleApprove(row.id)}
+                                    disabled={loading}
+                                >
+                                    <ApproveIcon fontSize="small" />
+                                    Approve
+                                </button>
+                                <button
+                                    className="btn-action btn-reject"
+                                    onClick={() => handleReject(row.id)}
+                                    disabled={loading}
+                                >
+                                    <RejectIcon fontSize="small" />
+                                    Reject
+                                </button>
+                            </>
+                        ) : (
+                            <div className={`status-badge ${row.status}`}>
+                                {row.status.toUpperCase()}
+                                {row.internal_status && (
+                                    <div className="internal-status">
+                                        ({row.internal_status})
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            },
+            width: "200px",
+            right: true
+        }
+    ];
 
     return (
         <div className="manage-books-page">
@@ -282,6 +268,17 @@ const ManageRequests = () => {
                     />
                 </div>
             </div>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />
         </div>
     );
 };

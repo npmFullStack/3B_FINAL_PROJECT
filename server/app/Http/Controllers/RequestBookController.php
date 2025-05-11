@@ -86,4 +86,18 @@ class RequestBookController extends Controller
    "message" => "Request status updated successfully",
   ]);
  }
+ 
+ 
+ public function getBorrowedBooks(Request $request)
+{
+    $user_id = auth()->id();
+    $borrowedBooks = RequestBook::with("book")
+        ->where("user_id", $user_id)
+        ->where("status", "approved")
+        ->get();
+
+    return response()->json($borrowedBooks);
+}
+
+
 }

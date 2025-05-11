@@ -196,64 +196,54 @@ const SearchBooks = () => {
                     {loading ? (
                         <div className="loading-spinner">Loading...</div>
                     ) : filteredBooks.length > 0 ? (
-                        <div className="book-cards-container">
-                            {filteredBooks.map((book, index) => (
-                                <div className="book-card" key={index}>
-                                    <div className="book-card-menu">
-                                        <MoreVert
-                                            className="more-icon"
-                                            onClick={e => {
-                                                e.stopPropagation();
-                                                // Toggle the menu for this card
-                                                const dropdown =
-                                                    e.currentTarget
-                                                        .nextElementSibling;
-                                                dropdown.classList.toggle(
-                                                    "show"
-                                                );
-                                            }}
-                                        />
-                                        <div className="card-dropdown-menu">
-                                            <div
-                                                className="dropdown-item"
-                                                onClick={() => handleView(book)}
-                                            >
-                                                View
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="book-card-content">
-                                        <div className="book-image-container">
-                                            {book.imageUrl ? (
-                                                <img
-                                                    src={book.imageUrl}
-                                                    alt={book.title}
-                                                    className="book-image"
-                                                />
-                                            ) : (
-                                                <div className="no-image">
-                                                    No Image
-                                                </div>
-                                            )}
-                                        </div>
-                                        <h4 className="book-title">
-                                            {book.title}
-                                        </h4>
-                                        <div
-                                            className="book-category"
-                                            style={{
-                                                backgroundColor:
-                                                    getCategoryColor(
-                                                        book.category
-                                                    )
-                                            }}
-                                        >
-                                            {book.category}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+
+<div className="book-cards-container">
+  {filteredBooks.map((book, index) => (
+    <div className="book-card" key={index}>
+      <div className="book-card-header">
+        <div className="book-header-left">
+          <h4 className="book-title">{book.title}</h4>
+          <div
+            className="book-category"
+            style={{ backgroundColor: getCategoryColor(book.category) }}
+          >
+            {book.category}
+          </div>
+        </div>
+        <div className="book-header-right">
+          <MoreVert
+            className="more-icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              const dropdown = e.currentTarget.nextElementSibling;
+              dropdown.classList.toggle("show");
+            }}
+          />
+          <div className="card-dropdown-menu">
+            <div
+              className="dropdown-item"
+              onClick={() => handleView(book)}
+            >
+              View
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="book-image-container">
+        {book.imageUrl ? (
+          <img
+            src={book.imageUrl}
+            alt={book.title}
+            className="book-image"
+          />
+        ) : (
+          <div className="no-image">No Image</div>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
+
                     ) : (
                         <div className="no-data">
                             <img

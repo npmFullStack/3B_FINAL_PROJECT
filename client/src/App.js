@@ -10,6 +10,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManageBooks from "./pages/ManageBooks";
 import ManageRequest from "./pages/ManageRequest";
 import SearchBooks from "./pages/SearchBooks";
+
+import MyBooks from "./pages/MyBooks";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -90,6 +92,15 @@ function App() {
                                 element={
                                     <ProtectedRoute allowedRoles={["student"]}>
                                         <SearchBooks />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            
+                                                        <Route
+                                path="/my-books"
+                                element={
+                                    <ProtectedRoute allowedRoles={["student"]}>
+                                        <MyBooks />
                                     </ProtectedRoute>
                                 }
                             />

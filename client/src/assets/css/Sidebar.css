@@ -1,13 +1,14 @@
 .sidebar {
     width: 250px;
     background-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     height: 100vh;
     position: fixed;
     z-index: 1000;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 .sidebar.minimized {
@@ -18,8 +19,11 @@
     padding: 15px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #666;
-    min-height: 80px;
+    border-bottom: 1px solid #f7f7f7;
+}
+
+.sidebar.minimized .sidebar-header {
+    justify-content: center;
 }
 
 .sidebar-header .logo {
@@ -31,31 +35,30 @@
 .sidebar-header .header-text {
     margin-left: 10px;
     text-align: left;
-    word-break: break-word;
-    white-space: normal;
 }
 
 .sidebar-header h2 {
     margin: 0;
     font-size: 14px;
     font-weight: bold;
-    white-space: normal;
     color: #333;
 }
 
 .sidebar-header p {
     margin: 0;
     font-size: 10px;
-    color: #444;
-    white-space: normal;
+    color: #666;
 }
 
 .user-container {
     display: flex;
     align-items: center;
     padding: 15px;
-    border-bottom: 1px solid #666;
-    margin-bottom: 10px;
+    border-bottom: 1px solid #f7f7f7;
+}
+
+.sidebar.minimized .user-container {
+    justify-content: center;
 }
 
 .user-image {
@@ -67,32 +70,18 @@
 
 .user-details {
     margin-left: 10px;
-    text-align: left;
-    overflow: hidden;
 }
 
 .user-details h3 {
     margin: 0;
     font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.user-details p {
-    margin: 0;
-    font-size: 12px;
-    color: #444;
+    color: #333;
 }
 
 .user-role {
     display: inline-block;
-    margin-top: 5px;
-    padding: 2px 8px;
-    background-color: #0066cc;
-    border-radius: 10px;
-    font-size: 10px;
-    color: #ecf0f1;
+    font-size: 12px;
+    color: #777;
 }
 
 .sidebar-menu {
@@ -103,64 +92,55 @@
 }
 
 .sidebar-menu li {
+    display: flex;
+    align-items: center;
     padding: 12px 20px;
+    transition: background 0.2s ease;
     cursor: pointer;
-    transition: all 0.3s;
 }
 
 .sidebar-menu li:hover {
-    background-color: #0066cc;
-    color: #fff !important;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .sidebar-menu li.active {
-    background-color: #0066cc;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border-left: 4px solid #333;
+    background-color: #007bff;
 }
 
-.sidebar-menu a {
-    color: #333;
+.sidebar-menu li.active a,
+.sidebar-menu li.active .menu-icon,
+.sidebar-menu li.active .menu-text {
+    color: #fff !important;
+}
+
+.sidebar-menu li a {
     text-decoration: none;
+    color: #333;
     display: flex;
     align-items: center;
+    width: 100%;
+    transition: color 0.2s ease;
+}
+
+.menu-icon {
+    font-size: 20px !important;
+    color: #555;
+}
+
+.menu-text {
+    margin-left: 15px;
+    font-size: 14px;
     font-weight: 500;
-    font-size: 15px;
+    color: #444;
+    white-space: nowrap;
 }
 
-..sidebar-menu a.active {
-    color: #fff;
-}
-
-.sidebar-menu .menu-icon {
-    margin-right: 10px;
-    font-size: 20px;
-}
-
-.sidebar.minimized .menu-text,
-.sidebar.minimized .header-text,
-.sidebar.minimized .user-details {
+.sidebar.minimized .menu-text {
     display: none;
 }
 
-.sidebar.minimized .sidebar-header {
-    justify-content: center;
-}
-
-.sidebar.minimized .user-container {
-    justify-content: center;
-    padding: 15px 0;
-}
-
 .sidebar.minimized .sidebar-menu li {
-    text-align: center;
-    padding: 15px 0;
-}
-
-.sidebar.minimized .menu-icon {
-    margin-right: 0;
-    font-size: 24px;
+    justify-content: center;
 }
 
 /* Responsive adjustments */

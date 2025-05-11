@@ -69,41 +69,35 @@ const SearchBooks = () => {
 
     // Generate consistent color for each category
     const getCategoryColor = category => {
-        const colors = [
-            "#3498db", // Blue
-            "#e74c3c", // Red
-            "#2ecc71", // Green
-            "#f39c12", // Orange
-            "#9b59b6", // Purple
-            "#1abc9c", // Turquoise
-            "#34495e", // Dark Blue
-            "#d35400", // Dark Orange
-            "#27ae60", // Dark Green
-            "#8e44ad" // Dark Purple
-        ];
-
-        // Create a simple hash function for string
-        let hash = 0;
-        for (let i = 0; i < category.length; i++) {
-            hash = category.charCodeAt(i) + ((hash << 5) - hash);
+    // Create a more unique hash by adding category length and first/last chars
+    let hash = category.length;
+    for (let i = 0; i < category.length; i++) {
+        hash = category.charCodeAt(i) + ((hash << 5) - hash);
+        if (i === 0 || i === category.length - 1) {
+            hash += category.charCodeAt(i) * 2; // Emphasize first/last chars
         }
+    }
+    const colors = [
+        "#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6",
+        "#1abc9c", "#34495e", "#d35400", "#27ae60", "#8e44ad",
+        "#16a085", "#c0392b", "#2980b9", "#8e44ad", "#f1c40f"
+    ];
 
-        // Get positive index
-        const index = Math.abs(hash) % colors.length;
-        return colors[index];
-    };
+    return colors[Math.abs(hash) % colors.length];
+};
 
     const filteredBooks = books.filter(book => {
-        const matchesSearch =
-            book.title.toLowerCase().includes(filterText.toLowerCase()) ||
-            book.author.toLowerCase().includes(filterText.toLowerCase());
+    const matchesSearch =
+        book.title.toLowerCase().includes(filterText.toLowerCase()) ||
+        book.author.toLowerCase().includes(filterText.toLowerCase());
 
-        const matchesCategory =
-            categoryFilter === "" ||
-            book.category.toLowerCase().includes(categoryFilter.toLowerCase());
+    // Exact category match (case insensitive)
+    const matchesCategory =
+        categoryFilter === "" ||
+        book.category.toLowerCase() === categoryFilter.toLowerCase();
 
-        return matchesSearch && matchesCategory;
-    });
+    return matchesSearch && matchesCategory;
+});
 
     const availableBooks = books.filter(book => book.available > 0).length;
 

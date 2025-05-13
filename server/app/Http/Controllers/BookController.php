@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
+  
+  public function count()
+{
+    $count = Book::where('status', 1)->count();
+    return response()->json(['count' => $count]);
+}
  public function index()
  {
   return Book::with(["user", "categories"])

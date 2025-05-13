@@ -7,6 +7,18 @@ use Illuminate\Http\Request;
 
 class RequestBookController extends Controller
 {
+  
+  public function countRequests(Request $request)
+{
+    $query = RequestBook::query();
+    
+    if ($request->has('status')) {
+        $query->where('status', $request->status);
+    }
+    
+    $count = $query->count();
+    return response()->json(['count' => $count]);
+}
  public function store(Request $request)
  {
   $validated = $request->validate([
@@ -88,16 +100,7 @@ class RequestBookController extends Controller
  }
  
  
- public function getBorrowedBooks(Request $request)
-{
-    $user_id = auth()->id();
-    $borrowedBooks = RequestBook::with("book")
-        ->where("user_id", $user_id)
-        ->where("status", "approved")
-        ->get();
 
-    return response()->json($borrowedBooks);
-}
 
 
 }

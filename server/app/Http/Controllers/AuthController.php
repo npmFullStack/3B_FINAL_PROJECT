@@ -11,6 +11,18 @@ use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
+  
+  public function countUsers(Request $request)
+{
+    $query = User::query();
+    
+    if ($request->has('user_type')) {
+        $query->where('user_type', $request->user_type);
+    }
+    
+    $count = $query->count();
+    return response()->json(['count' => $count]);
+}
     public function register(Request $request)
     {
         $request->validate([
@@ -82,4 +94,6 @@ if ($user->user_type === 'student') {
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out']);
     }
+    
+
 }

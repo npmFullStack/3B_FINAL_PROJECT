@@ -10,35 +10,25 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManageBooks from "./pages/ManageBooks";
 import ManageRequest from "./pages/ManageRequest";
 import SearchBooks from "./pages/SearchBooks";
-
-import MyBooks from "./pages/MyBooks";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-    // ===== Axios Global Configuration =====
-    // Inside your App component
     useEffect(() => {
-        // Set base URL for all Axios requests
         axios.defaults.baseURL = "http://localhost:8000";
 
-        // Enable sending cookies with requests
         axios.defaults.withCredentials = true;
 
-        // Initialize CSRF token
         axios
             .get("/sanctum/csrf-cookie")
             .catch(err => console.error("CSRF init error:", err));
 
-        // Add request interceptor to attach token to every request
         axios.interceptors.request.use(config => {
-            // Skip for CSRF cookie request
             if (config.url === "/sanctum/csrf-cookie") {
                 return config;
             }
 
             const token = localStorage.getItem("authToken");
             if (token) {
-                // For FormData requests, we need to preserve headers
                 if (config.data instanceof FormData) {
                     config.headers = {
                         ...config.headers,
@@ -52,12 +42,10 @@ function App() {
             return config;
         });
 
-        // Add response interceptor to handle token expiration
         axios.interceptors.response.use(
             response => response,
             async error => {
                 if (error.response?.status === 401) {
-                    // Handle token expiration
                     localStorage.removeItem("authToken");
                     localStorage.removeItem("user");
                     window.location.href = "/auth";
@@ -92,15 +80,6 @@ function App() {
                                 element={
                                     <ProtectedRoute allowedRoles={["student"]}>
                                         <SearchBooks />
-                                    </ProtectedRoute>
-                                }
-                            />
-                            
-                                                        <Route
-                                path="/my-books"
-                                element={
-                                    <ProtectedRoute allowedRoles={["student"]}>
-                                        <MyBooks />
                                     </ProtectedRoute>
                                 }
                             />

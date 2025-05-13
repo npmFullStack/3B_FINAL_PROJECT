@@ -59,26 +59,13 @@ const Sidebar = ({ isMinimized, toggleSidebar, closeSidebar }) => {
             icon: <BookIcon className="menu-icon" />,
             text: "Manage Books"
         },
-        {
-            to: "/manage-users",
-            icon: <PeopleIcon className="menu-icon" />,
-            text: "Manage Users"
-        },
+
         {
             to: "/manage-requests",
             icon: <RequestIcon className="menu-icon" />,
             text: "Manage Requests"
         },
-        {
-            to: "/reports",
-            icon: <ReportIcon className="menu-icon" />,
-            text: "Reports"
-        },
-        {
-            to: "/profile",
-            icon: <PersonIcon className="menu-icon" />,
-            text: "Profile"
-        }
+
     ];
 
     const studentLinks = [
@@ -92,21 +79,7 @@ const Sidebar = ({ isMinimized, toggleSidebar, closeSidebar }) => {
             icon: <HomeIcon className="menu-icon" />,
             text: "Dashboard"
         },
-        {
-            to: "/my-books",
-            icon: <BookIcon className="menu-icon" />,
-            text: "My Books"
-        },
-        {
-            to: "/borrowing-history",
-            icon: <HistoryIcon className="menu-icon" />,
-            text: "History"
-        },
-        {
-            to: "/profile",
-            icon: <PersonIcon className="menu-icon" />,
-            text: "Profile"
-        }
+
     ];
 
     const links = user?.user_type === "librarian" ? adminLinks : studentLinks;

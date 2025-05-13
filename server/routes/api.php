@@ -22,11 +22,19 @@ Route::middleware("auth:sanctum")->group(function () {
  Route::post("/request-book", [RequestBookController::class, "store"]);
  Route::get("/requests", [RequestBookController::class, "index"]); // Get all requests
  Route::put("/requests/{id}", [RequestBookController::class, "update"]);
- Route::get("/my-books", [RequestBookController::class, "getBorrowedBooks"]);
+ 
 
  Route::get("/books/{id}", [BookController::class, "show"]);
  Route::put("/books/{id}", [BookController::class, "update"]);
-Route::delete("/books/{id}", [BookController::class, "destroy"]);
+ Route::delete("/books/{id}", [BookController::class, "destroy"]);
+ 
+ 
+ 
+ 
+ // Add these routes inside your auth:sanctum group
+Route::get('/books/count', [BookController::class, 'count']);
+Route::get('/users/count', [AuthController::class, 'countUsers']);
+Route::get('/requests/count', [RequestBookController::class, 'countRequests']);
 });
 
 Route::fallback(function () {

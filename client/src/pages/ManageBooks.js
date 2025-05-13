@@ -27,21 +27,29 @@ const ManageBooks = () => {
 
     // Fetch books data with categories and images
     const fetchBooks = async () => {
-    try {
-        setLoading(true);
-        const response = await axios.get("http://localhost:8000/api/books");
-        const booksWithData = response.data.map(book => ({
-            ...book,
-            category: book.categories?.map(c => c.name).join(", ") || "No category",
-            imageUrl: book.image_path ? `http://localhost:8000/storage/${book.image_path}` : null
-        }));
-        setBooks(booksWithData);
-    } catch (error) {
-        console.error("Error fetching books:", error);
-    } finally {
-        setLoading(false);
-    }
-};
+        try {
+            setLoading(true);
+            const response = await axios.get("http://localhost:8000/api/books");
+            const booksWithData = response.data.map(book => ({
+                ...book,
+                category:
+                    book.categories?.map(c => c.name).join(", ") ||
+                    "No category",
+                imageUrl: book.image_path
+                    ? `http://localhost:8000/storage/${book.image_path}`
+                    : null
+            }));
+            // Sort books by created_at in descending order (newest first)
+            const sortedBooks = booksWithData.sort((a, b) => 
+                new Date(b.created_at) - new Date(a.created_at)
+            );
+            setBooks(sortedBooks);
+        } catch (error) {
+            console.error("Error fetching books:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchBooks();
@@ -148,7 +156,7 @@ const ManageBooks = () => {
                         <Edit fontSize="small" />
                     </button>
                     <button
-                        className="btn-icon btn-delete"
+                        className="btn-icon btn-deletes"
                         title="Delete"
                         onClick={() => handleDelete(row.id)}
                     >
@@ -231,7 +239,8 @@ const ManageBooks = () => {
                             highlightOnHover
                             responsive
                             striped
-                            defaultSortField="title"
+                            defaultSortField="created_at"
+                            defaultSortAsc={false}
                             customStyles={customStyles}
                             subHeader
                             subHeaderComponent={

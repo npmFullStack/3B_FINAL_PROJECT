@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
-import { Menu as MenuIcon, Edit, Delete, Add, Search } from "@mui/icons-material";
+import {
+    Menu as MenuIcon,
+    Edit,
+    Delete,
+    Add,
+    Search
+} from "@mui/icons-material";
 import DataTable from "react-data-table-component";
 import AddBookModal from "../components/modal/AddBookModal";
+import EditBookModal from "../components/modal/EditBookModal";
+import DeleteBookModal from "../components/modal/DeleteBookModal";
 import "../assets/css/ManageBooks.css";
 import axios from "axios";
 
@@ -12,26 +20,28 @@ const ManageBooks = () => {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [filterText, setFilterText] = useState('');
+    const [filterText, setFilterText] = useState("");
+
+    const [editingBook, setEditingBook] = useState(null);
+    const [deletingBook, setDeletingBook] = useState(null);
 
     // Fetch books data with categories and images
     const fetchBooks = async () => {
-        try {
-            const response = await axios.get("http://localhost:8000/api/books");
-            const booksWithData = response.data.map(book => ({
-                ...book,
-                category: book.categories?.map(c => c.name).join(', ') || 'No category',
-                imageUrl: book.image_path 
-                    ? `http://localhost:8000/storage/${book.image_path}`
-                    : null
-            }));
-            setBooks(booksWithData);
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching books:", error);
-            setLoading(false);
-        }
-    };
+    try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:8000/api/books");
+        const booksWithData = response.data.map(book => ({
+            ...book,
+            category: book.categories?.map(c => c.name).join(", ") || "No category",
+            imageUrl: book.image_path ? `http://localhost:8000/storage/${book.image_path}` : null
+        }));
+        setBooks(booksWithData);
+    } catch (error) {
+        console.error("Error fetching books:", error);
+    } finally {
+        setLoading(false);
+    }
+};
 
     useEffect(() => {
         fetchBooks();
@@ -48,45 +58,49 @@ const ManageBooks = () => {
     };
 
     // Filter books based on search text
-    const filteredBooks = books.filter(item =>
-        item.title.toLowerCase().includes(filterText.toLowerCase()) ||
-        item.author.toLowerCase().includes(filterText.toLowerCase()) ||
-        item.category.toLowerCase().includes(filterText.toLowerCase())
+    const filteredBooks = books.filter(
+        item =>
+            item.title.toLowerCase().includes(filterText.toLowerCase()) ||
+            item.author.toLowerCase().includes(filterText.toLowerCase()) ||
+            item.category.toLowerCase().includes(filterText.toLowerCase())
     );
 
     // Custom styles for DataTable
     const customStyles = {
         headCells: {
             style: {
-                fontWeight: 'bold',
-                fontSize: '14px',
-                backgroundColor: '#f5f5f5',
-            },
+                fontWeight: "bold",
+                fontSize: "14px",
+                backgroundColor: "#f5f5f5"
+            }
         },
         cells: {
             style: {
-                padding: '12px',
-            },
-        },
+                padding: "12px"
+            }
+        }
     };
 
     // Table columns
     const columns = [
         {
             name: "Cover",
-            cell: row => (
+            cell: row =>
                 row.imageUrl ? (
-                    <img 
-                        src={row.imageUrl} 
-                        alt={row.title} 
-                        className="book-cover" 
-                        style={{ width: '50px', height: '70px', objectFit: 'cover' }}
+                    <img
+                        src={row.imageUrl}
+                        alt={row.title}
+                        className="book-cover"
+                        style={{
+                            width: "50px",
+                            height: "70px",
+                            objectFit: "cover"
+                        }}
                     />
                 ) : (
                     <div className="no-cover">No Image</div>
-                )
-            ),
-            width: '80px'
+                ),
+            width: "80px"
         },
         {
             name: "Title",
@@ -126,15 +140,15 @@ const ManageBooks = () => {
             name: "Actions",
             cell: row => (
                 <div className="action-buttons">
-                    <button 
-                        className="btn-icon btn-edit" 
+                    <button
+                        className="btn-icon btn-edit"
                         title="Edit"
                         onClick={() => handleEdit(row.id)}
                     >
                         <Edit fontSize="small" />
                     </button>
-                    <button 
-                        className="btn-icon btn-delete" 
+                    <button
+                        className="btn-icon btn-delete"
                         title="Delete"
                         onClick={() => handleDelete(row.id)}
                     >
@@ -142,19 +156,21 @@ const ManageBooks = () => {
                     </button>
                 </div>
             ),
-            width: '120px'
+            width: "120px"
         }
     ];
 
-    const handleEdit = (id) => {
-        // Implement edit functionality
-        console.log("Edit book with id:", id);
+    const handleEdit = id => {
+        const bookToEdit = books.find(book => book.id === id);
+        if (bookToEdit) {
+            setEditingBook(bookToEdit);
+        }
     };
 
-    const handleDelete = (id) => {
-        // Implement delete functionality
-        if (window.confirm("Are you sure you want to delete this book?")) {
-            console.log("Delete book with id:", id);
+    const handleDelete = id => {
+        const bookToDelete = books.find(book => book.id === id);
+        if (bookToDelete) {
+            setDeletingBook(bookToDelete);
         }
     };
 
@@ -197,7 +213,10 @@ const ManageBooks = () => {
                             className="btn-primary"
                             onClick={() => setShowAddModal(true)}
                         >
-                            <Add fontSize="small" style={{ marginRight: '8px' }} />
+                            <Add
+                                fontSize="small"
+                                style={{ marginRight: "8px" }}
+                            />
                             Add Book
                         </button>
                     </div>
@@ -216,7 +235,7 @@ const ManageBooks = () => {
                             customStyles={customStyles}
                             subHeader
                             subHeaderComponent={
-                                <div style={{ display: 'none' }} /> // Hide default search
+                                <div style={{ display: "none" }} /> // Hide default search
                             }
                         />
                     ) : (
@@ -236,6 +255,24 @@ const ManageBooks = () => {
                 <AddBookModal
                     onClose={() => setShowAddModal(false)}
                     onBookAdded={fetchBooks}
+                />
+            )}
+
+            {/* Edit Book Modal */}
+            {editingBook && (
+                <EditBookModal
+                    bookId={editingBook.id}
+                    onClose={() => setEditingBook(null)}
+                    onBookUpdated={fetchBooks}
+                />
+            )}
+
+            {/* Delete Book Modal */}
+            {deletingBook && (
+                <DeleteBookModal
+                    book={deletingBook}
+                    onClose={() => setDeletingBook(null)}
+                    onBookDeleted={fetchBooks}
                 />
             )}
         </div>

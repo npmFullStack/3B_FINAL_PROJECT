@@ -1,37 +1,64 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import "../../assets/css/AddBookModal.css";
 import * as Select from "@radix-ui/react-select";
 import { ChevronDownIcon, CheckIcon } from "@radix-ui/react-icons";
 
-const AddBookModal = ({ onClose, onBookAdded }) => {
+const EditBookModal = ({ bookId, onClose, onBookUpdated }) => {
+    const [book, setBook] = useState(null);
     const [formData, setFormData] = useState({
         title: "",
         author: "",
         selectedCategory: "",
-        newCategory: "",
         isbn: "",
         quantity: 1,
         description: "",
-        image: null
+        image: null,
+        currentImage: null
     });
 
     const [existingCategories, setExistingCategories] = useState([]);
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get("http://localhost:8000/api/categories");
-                setExistingCategories(response.data);
+                const [bookResponse, categoriesResponse] = await Promise.all([
+                    axios.get(`http://localhost:8000/api/books/${bookId}`),
+                    axios.get("http://localhost:8000/api/categories")
+                ]);
+
+                const bookData = bookResponse.data;
+                setBook(bookData);
+                setExistingCategories(categoriesResponse.data);
+
+                setFormData({
+                    title: bookData.title,
+                    author: bookData.author,
+                    selectedCategory: bookData.categories?.length > 0 ? bookData.categories[0].name : "",
+                    isbn: bookData.isbn || "",
+                    quantity: bookData.quantity,
+                    description: bookData.description || "",
+                    image: null,
+                    currentImage: bookData.image_path
+                        ? `http://localhost:8000/storage/${bookData.image_path}`
+                        : null
+                });
             } catch (error) {
-                console.error("Error fetching categories:", error);
+                console.error("Error fetching data:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
-        fetchCategories();
-    }, []);
+
+        if (bookId) {
+            fetchData();
+        }
+    }, [bookId]);
 
     const handleChange = e => {
         const { name, value } = e.target;
@@ -44,7 +71,10 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
     const handleImageChange = e => {
         setFormData(prev => ({
             ...prev,
-            image: e.target.files[0]
+            image: e.target.files[0],
+            currentImage: e.target.files[0]
+                ? URL.createObjectURL(e.target.files[0])
+                : prev.currentImage
         }));
     };
 
@@ -53,51 +83,37 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
         setIsSubmitting(true);
         setErrors({});
 
-        // Validate category selection
-        if (!formData.selectedCategory && !formData.newCategory.trim()) {
-            setErrors(prev => ({ ...prev, categories: "Please select or add a category" }));
+        if (!formData.selectedCategory) {
+            setErrors(prev => ({ ...prev, category: "Please select a category" }));
             setIsSubmitting(false);
             return;
         }
 
         try {
-            const token = localStorage.getItem('authToken');
-            if (!token) throw new Error('No authentication token found');
+            const token = localStorage.getItem("authToken");
+            if (!token) throw new Error("No authentication token found");
 
             const dataToSend = new FormData();
             dataToSend.append("title", formData.title);
             dataToSend.append("author", formData.author);
-            
-            // Handle categories
-            const categories = [];
-            if (formData.selectedCategory) {
-                categories.push(formData.selectedCategory);
-            } else if (formData.newCategory.trim()) {
-                categories.push(formData.newCategory.trim());
-            }
-            
-            categories.forEach((cat, index) => {
-                dataToSend.append(`categories[${index}]`, cat);
-            });
-
+            dataToSend.append("categories[0]", formData.selectedCategory);
             dataToSend.append("isbn", formData.isbn);
             dataToSend.append("quantity", formData.quantity);
             dataToSend.append("description", formData.description);
+            dataToSend.append("_method", "PUT");
             if (formData.image) dataToSend.append("image", formData.image);
 
             const api = axios.create({
-                baseURL: 'http://localhost:8000',
+                baseURL: "http://localhost:8000",
                 withCredentials: true,
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data"
                 }
             });
 
-            await api.post('/api/add-book', dataToSend);
-            const categoriesResponse = await axios.get('/api/categories');
-            setExistingCategories(categoriesResponse.data);
-            onBookAdded();
+            const response = await api.post(`/api/books/${bookId}`, dataToSend);
+            onBookUpdated();
             onClose();
         } catch (error) {
             console.error("Error:", error);
@@ -115,15 +131,92 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h3>Loading Book Data...</h3>
+                    </div>
+                    <div className="modal-body">
+                        <div className="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!book) {
+        return (
+            <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h3>Error</h3>
+                        <button className="close-btn" onClick={onClose}>
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M18 6L6 18"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M6 6L18 18"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                    <div className="modal-body">
+                        <p>Could not load book data. Please try again.</p>
+                    </div>
+                    <div className="modal-footer">
+                        <button className="btn-cancel" onClick={onClose}>
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>Add New Book</h3>
+                    <h3>Edit Book</h3>
                     <button className="close-btn" onClick={onClose}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M18 6L6 18"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                            <path
+                                d="M6 6L18 18"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -184,9 +277,9 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
                                     style={{ display: "none" }}
                                 />
                                 <div className="image-upload-box">
-                                    {formData.image ? (
+                                    {formData.currentImage ? (
                                         <img
-                                            src={URL.createObjectURL(formData.image)}
+                                            src={formData.currentImage}
                                             alt="Preview"
                                             className="image-preview"
                                         />
@@ -194,7 +287,9 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
                                         <>
                                             <CloudUploadIcon fontSize="large" />
                                             <span>Upload Cover Image</span>
-                                            <p className="upload-hint">PNG, JPG up to 5MB</p>
+                                            <p className="upload-hint">
+                                                PNG, JPG up to 5MB
+                                            </p>
                                         </>
                                     )}
                                 </div>
@@ -207,17 +302,15 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
                             <label htmlFor="category-select">Select Category</label>
                             <Select.Root
                                 value={formData.selectedCategory || undefined}
-                                onValueChange={(value) => {
+                                onValueChange={value => {
                                     setFormData(prev => ({
                                         ...prev,
-                                        selectedCategory: value,
-                                        newCategory: "" // Clear new category when selecting existing one
+                                        selectedCategory: value || ""
                                     }));
-                                    setErrors(prev => ({ ...prev, categories: undefined }));
                                 }}
                             >
-                                <Select.Trigger 
-                                    className={`select-trigger ${errors.categories ? 'error' : ''}`} 
+                                <Select.Trigger
+                                    className={`select-trigger ${errors.categories ? 'error' : ''}`}
                                     id="category-select"
                                     aria-label="Category"
                                 >
@@ -226,7 +319,7 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
                                         <ChevronDownIcon />
                                     </Select.Icon>
                                 </Select.Trigger>
-                                
+
                                 <Select.Portal>
                                     <Select.Content className="select-content">
                                         <Select.Viewport className="select-viewport">
@@ -236,7 +329,9 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
                                                     key={`category-${index}`}
                                                     className="select-item"
                                                 >
-                                                    <Select.ItemText>{category}</Select.ItemText>
+                                                    <Select.ItemText>
+                                                        {category}
+                                                    </Select.ItemText>
                                                     <Select.ItemIndicator className="select-item-indicator">
                                                         <CheckIcon />
                                                     </Select.ItemIndicator>
@@ -246,27 +341,10 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
                                     </Select.Content>
                                 </Select.Portal>
                             </Select.Root>
+                            {errors.categories && (
+                                <p className="error-message">{errors.categories}</p>
+                            )}
                         </div>
-                        
-                        <div className="form-group">
-                            <label htmlFor="new-category">Or Add New Category</label>
-                            <input
-                                type="text"
-                                id="new-category"
-                                name="newCategory"
-                                value={formData.newCategory}
-                                onChange={(e) => {
-                                    handleChange(e);
-                                    setErrors(prev => ({ ...prev, categories: undefined }));
-                                }}
-                                placeholder="Enter new category name"
-                                disabled={!!formData.selectedCategory}
-                                className={`modern-input ${errors.categories ? 'error' : ''}`}
-                            />
-                        </div>
-                        {errors.categories && (
-                            <p className="error-message">{errors.categories}</p>
-                        )}
                     </div>
 
                     <div className="form-group">
@@ -299,15 +377,15 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
                         >
                             Cancel
                         </button>
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             className="btn-submit"
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? (
                                 <span className="spinner"></span>
                             ) : (
-                                "Publish Book"
+                                "Update Book"
                             )}
                         </button>
                     </div>
@@ -317,4 +395,10 @@ const AddBookModal = ({ onClose, onBookAdded }) => {
     );
 };
 
-export default AddBookModal;
+EditBookModal.propTypes = {
+    bookId: PropTypes.number.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onBookUpdated: PropTypes.func.isRequired
+};
+
+export default EditBookModal;

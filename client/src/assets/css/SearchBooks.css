@@ -1,7 +1,6 @@
 /* assets/css/ManageBooks.css */
 .manage-books-page {
     min-height: 100vh;
-    background-color: #f5f5f5;
     position: relative;
 }
 
@@ -377,5 +376,3 @@
         font-size: 1.2rem;
     }
 }
-
-

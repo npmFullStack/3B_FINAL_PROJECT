@@ -21,6 +21,7 @@ Schema::create('books', function (Blueprint $table) {
     $table->integer('quantity')->default(1);
     $table->integer('available')->default(1);
     $table->string('image_path')->nullable();
+    $table->tinyInteger('status')->default(1)->comment('1=active, 0=deleted');
     $table->foreignId('user_id')->constrained()->onDelete('cascade');
     $table->timestamps();
 });

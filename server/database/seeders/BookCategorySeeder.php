@@ -8,35 +8,63 @@ use Illuminate\Database\Seeder;
 
 class BookCategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $categories = [
-            'Fiction',
-            'Non-Fiction',
-            'Science Fiction',
-            'Fantasy',
-            'Mystery',
-            'Thriller',
-            'Romance',
-            'Horror',
-            'Biography',
-            'History'
-        ];
+        // Clear existing categories
+        BookCategory::truncate();
 
-        // Get all books to associate categories with
         $books = Book::all();
 
-        foreach ($books as $book) {
-            // Assign 2-3 random categories to each book
-            $randomCategories = array_rand(array_flip($categories), rand(2, 3));
+        // Category assignments - each book gets exactly one category
+        $categoryAssignments = [
+            // Fiction
+            'The Great Gatsby' => 'Fiction',
+            'To Kill a Mockingbird' => 'Fiction',
+            '1984' => 'Dystopian',
+            'Pride and Prejudice' => 'Romance',
+            'The Catcher in the Rye' => 'Fiction',
             
-            foreach ((array)$randomCategories as $categoryName) {
+            // Science Fiction
+            'Dune' => 'Science Fiction',
+            'Neuromancer' => 'Cyberpunk',
+            'The Martian' => 'Science Fiction',
+            'Foundation' => 'Science Fiction',
+            'Ender\'s Game' => 'Science Fiction',
+            
+            // Fantasy
+            'The Hobbit' => 'Fantasy',
+            'A Game of Thrones' => 'Fantasy',
+            'The Name of the Wind' => 'Fantasy',
+            'The Way of Kings' => 'Fantasy',
+            'American Gods' => 'Fantasy',
+            
+            // Mystery/Thriller
+            'The Girl with the Dragon Tattoo' => 'Thriller',
+            'Gone Girl' => 'Thriller',
+            'The Da Vinci Code' => 'Mystery',
+            'The Silent Patient' => 'Psychological Thriller',
+            'Sharp Objects' => 'Thriller',
+            
+            // Non-Fiction
+            'Sapiens: A Brief History of Humankind' => 'History',
+            'Atomic Habits' => 'Self-Help',
+            'Educated' => 'Memoir',
+            'The Subtle Art of Not Giving a F*ck' => 'Self-Help',
+            'Becoming' => 'Autobiography',
+            
+            // Horror
+            'The Shining' => 'Horror',
+            'It' => 'Horror',
+            'The Exorcist' => 'Horror',
+            'Bird Box' => 'Horror',
+            'House of Leaves' => 'Horror'
+        ];
+
+        foreach ($books as $book) {
+            if (isset($categoryAssignments[$book->title])) {
                 BookCategory::create([
                     'book_id' => $book->id,
-                    'name' => $categoryName
+                    'name' => $categoryAssignments[$book->title]
                 ]);
             }
         }
